@@ -1,0 +1,49 @@
+name: calendar
+
+on:
+  schedule:
+    # Cada 15 minutos. GitHub puede retrasar la ejecución unos minutos en horas
+    # de alta demanda; es normal y no afecta la lógica (se evalúa la última vela cerrada).
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}   # permite ejecutarlo manualmente desde la pestaña "Actions"
+
+permissions:
+  contents: write   # necesario para poder commitear state.json de vuelta al repo
+
+concurrency:
+  group: Calendario
+  cancel-in-progress: false
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar calendario
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python calendario.py
+
+      - name: Guardar estado (state.json) si cambió
+        run: |
+          if ! git diff --quiet -- state.json; then
+            git config user.name "scalper-bot"
+            git config user.email "actions@github.com"
+            git add state.json
+            git commit -m "chore: actualizar estado del bot [skip ci]"
+            
+            git push
+          else
+            echo "state.json sin cambios, no se commitea nada."
+          fi
