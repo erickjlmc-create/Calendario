@@ -1,31 +1,3 @@
-"""
-Bot de señales — RF x Hull x STC MTF Confluence
-=================================================
-Replica en Python la lógica del indicador de Pine Script (Range Filter + Hull Suite
-+ confluencia STC en 15m/1H/4H) usando datos de Yahoo Finance (yfinance), y envía
-las alertas resultantes a un chat/canal de Telegram.
-
-Pensado para ejecutarse periódicamente vía GitHub Actions (cron), no como proceso
-continuo. Cada ejecución:
-  1. Descarga velas 15m (y deriva 1H/4H) del símbolo configurado.
-  2. Calcula Range Filter, Hull Suite y STC (15m/1H/4H).
-  3. Evalúa la última vela 15m YA CERRADA (nunca la vela en formación).
-  4. Si hay señal (full / parcial / info) y no fue notificada antes, envía Telegram
-     y guarda el timestamp en state.json para no duplicar avisos.
-
-LIMITACIONES IMPORTANTES (léelas antes de operar con esto):
-  - Yahoo Finance NO es el mismo feed que usa TradingView/tu bróker. Puede haber
-    pequeñas diferencias de precio/spread frente a la vela real de tu broker.
-  - Yahoo no ofrece velas nativas de 4H; se derivan resampleando velas de 1H, lo
-    cual puede no alinear exactamente con el "4H" que usa TradingView.
-  - Yahoo limita el histórico intradía (15m/1H) a ventanas cortas (semanas/meses),
-    suficiente para calcular los indicadores pero no para backtests largos.
-  - ta.rma (SMMA) de Pine se aproxima aquí con un EMA de alpha=1/length; es una
-    aproximación razonable, no un calco exacto bar a bar.
-  - Este script NO ejecuta órdenes ni es asesoría financiera; solo replica la
-    lógica de señales del indicador y notifica.
-"""
-
 import json
 import os
 import sys
