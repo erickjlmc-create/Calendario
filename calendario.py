@@ -483,8 +483,8 @@ def process_pair(pair: dict, state: dict) -> bool:
     partial_long = last["lng"] and last["trigger_long"] and (last["h1_bias_bull"] or last["h4_bias_bull"]) and not full_long
     partial_short = last["srt"] and last["trigger_short"] and (last["h1_bias_bear"] or last["h4_bias_bear"]) and not full_short
 
-    info_long = last["lng"] and not full_long and not partial_long
-    info_short = last["srt"] and not full_short and not partial_short
+    # Nota: las señales sin confluencia STC (antes "info") ya no se reportan;
+    # solo se notifican FULL y PARCIAL.
 
     last_alerted = state.get(binance_symbol)
     bar_id = last_time.isoformat()
@@ -504,10 +504,6 @@ def process_pair(pair: dict, state: dict) -> bool:
         msg = build_message(pair, "partial", "long", price, bar_id)
     elif partial_short:
         msg = build_message(pair, "partial", "short", price, bar_id)
-    elif info_long:
-        msg = build_message(pair, "info", "long", price, bar_id)
-    elif info_short:
-        msg = build_message(pair, "info", "short", price, bar_id)
 
     if msg:
         print(f"  >> Señal detectada para {binance_symbol}, enviando a Telegram.")
